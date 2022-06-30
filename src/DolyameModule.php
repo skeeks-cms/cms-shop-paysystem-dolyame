@@ -15,5 +15,5 @@ use yii\base\Module;
  */
 class DolyameModule extends Module
 {
-    public $controllerNamespace = 'skeeks\cms\shop\sberbank\controllers';
+    public $controllerNamespace = 'skeeks\cms\shop\dolyame\controllers';
 }
