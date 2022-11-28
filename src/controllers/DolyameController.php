@@ -29,6 +29,37 @@ class DolyameController extends Controller
      */
     public $enableCsrfValidation = false;
 
+    public function actionRefund() {
+
+        /**
+         * @var $bill ShopBill
+         */
+        if (!$code = \Yii::$app->request->get('code')) {
+            throw new Exception('Bill not found');
+        }
+
+        if (!$bill = ShopBill::find()->cmsSite()->where(['code' => $code])->one()) {
+            throw new Exception('Bill not found');
+        }
+
+        $shopOrder = $bill->shopOrder;
+        /**
+         * @var $dolyameHandler \skeeks\cms\shop\dolyame\DolyamePaysystemHandler
+         */
+        $dolyameHandler = $shopOrder->shopPaySystem->handler;
+        $uniqueId = \skeeks\cms\shop\dolyame\DolyamePaysystemHandler::getUniqueOrderId($bill);
+
+        $items = \skeeks\cms\shop\dolyame\DolyamePaysystemHandler::getDataItemsForOrder($shopOrder);
+
+        $response = $dolyameHandler->sendRequest("{$uniqueId}/refund", [
+            'amount' => (float) $shopOrder->money->amount,
+            'returned_items' => $items
+        ]);
+
+        print_r($response->content);
+        die;
+    }
+
     public function actionNotification() {
 
         $dataJson = file_get_contents("php://input");

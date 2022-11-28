@@ -148,15 +148,30 @@ class DolyamePaysystemHandler extends PaysystemHandler
      */
     static public function getDataItemsForOrder(ShopOrder $shopOrder) {
         $items = [];
+
+        $discount = (float) $shopOrder->discount_amount;
+        //Если есть скидка надо вычесть из заказа
+
         foreach ($shopOrder->shopOrderItems as $shopOrderItem) {
             $itemData = [];
 
             /**
-             * @see https://www.tinkoff.ru/kassa/develop/api/payments/init-request/#Items
+             * @see https://dolyame.ru/develop/help/api/?method=create
              */
+            $amount = (float) $shopOrderItem->money->amount;
+            if ($discount > 0) {
+                if ($amount >= $discount) {
+                    $amount = $amount - $discount;
+                    $discount = 0;
+                } else {
+                    $amount = 0;
+                    $discount = $discount - $amount;
+                }
+            }
+
             $itemData['name'] = StringHelper::substr($shopOrderItem->name, 0, 128);
             $itemData['quantity'] = (float)$shopOrderItem->quantity;
-            $itemData['price'] = $shopOrderItem->money->amount;
+            $itemData['price'] = $amount;
 
             $items[] = $itemData;
         }
